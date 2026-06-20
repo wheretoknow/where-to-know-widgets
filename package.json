@@ -1,0 +1,12 @@
+{
+  "name": "where-to-know-widgets",
+  "version": "1.0.0",
+  "description": "Embeddable review score widgets for wheretoknow.com clients",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.0"
+  }
+}

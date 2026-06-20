@@ -1,0 +1,46 @@
+name: Deploy to S3
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build embed.js
+        run: node build.js
+
+      - name: Copy render.html to dist
+        run: cp src/render.html dist/render.html
+
+      - name: Deploy to S3
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - run: |
+          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/v1/ \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*.html"
+          aws s3 cp dist/render.html s3://${{ secrets.S3_BUCKET }}/v1/render.html \
+            --cache-control "public, max-age=300"
+          aws s3 cp dist/embed.js s3://${{ secrets.S3_BUCKET }}/v1/embed.js \
+            --cache-control "public, max-age=300"
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} \
+            --paths "/v1/*"

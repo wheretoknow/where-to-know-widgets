@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WTK Widget</title>
+<style>
+/* ── Reset ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:transparent;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── CSS custom props injected by JS ── */
+:root{--brand:#6366f1;--brand-dark:#4f46e5}
+
+/* ── Shared ── */
+.wtk{display:inline-flex;flex-direction:column;border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}
+.logo-row{display:flex;align-items:center;gap:5px}
+.logo-mark{width:20px;height:20px;border-radius:5px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:12px;height:12px}
+.logo-text{font-size:10.5px;font-weight:800;color:var(--brand);letter-spacing:.4px}
+.stars{color:#f59e0b;letter-spacing:1px}
+.cat-bar-wrap{flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden}
+.cat-bar{height:100%;border-radius:2px}
+
+/* ── COMPACT ── */
+.wtk-compact{width:200px;background:#fff;border:1px solid #e8e8e8;padding:16px 14px 13px;align-items:center;text-align:center;gap:3px}
+.wtk-compact .score{font-size:46px;font-weight:900;color:#111;line-height:1;letter-spacing:-2px}
+.wtk-compact .denom{font-size:13px;font-weight:400;color:#c4c4c4;vertical-align:super}
+.wtk-compact .period-tag{margin-top:8px;font-size:8.5px;background:#f0f0ff;color:var(--brand);padding:3px 9px;border-radius:10px;font-weight:700}
+.wtk-compact .cnt{font-size:9.5px;color:#aaa;margin-top:2px}
+.wtk-compact .sep{width:36px;height:1px;background:#f0f0f0;margin:7px auto}
+
+/* ── HORIZONTAL ── */
+.wtk-horizontal{width:420px;max-width:100%;background:#fff;border:1px solid #e8e8e8;flex-direction:row}
+.wtk-horizontal .left{background:var(--brand);padding:14px 18px;align-items:center;justify-content:center;min-width:88px;flex-shrink:0;gap:3px;display:flex;flex-direction:column}
+.wtk-horizontal .left .big{font-size:32px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px}
+.wtk-horizontal .left .sub{font-size:9.5px;color:rgba(255,255,255,.65)}
+.wtk-horizontal .left .s{color:#fde68a;font-size:12px}
+.wtk-horizontal .mid{flex:1;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.wtk-horizontal .cat-row{display:flex;align-items:center;gap:8px}
+.wtk-horizontal .cl{font-size:9px;color:#9ca3af;width:52px;flex-shrink:0}
+.wtk-horizontal .cv{font-size:9.5px;font-weight:700;width:24px;text-align:right;flex-shrink:0}
+.wtk-horizontal .right{padding:10px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid #f3f4f6;flex-shrink:0;min-width:80px;gap:4px}
+.wtk-horizontal .right .cnt{font-size:8px;color:#aaa;text-align:center;line-height:1.5}
+
+/* ── CARD ── */
+.wtk-card{width:280px;background:#fff;border:1px solid #e8e8e8}
+.wtk-card .head{background:var(--brand);padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.wtk-card .head .score-block{text-align:right}
+.wtk-card .head .big{font-size:30px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px}
+.wtk-card .head .denom{font-size:11px;color:rgba(255,255,255,.55)}
+.wtk-card .head .sts{color:#fde68a;font-size:11px}
+.wtk-card .body{padding:12px 14px}
+.wtk-card .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.wtk-card .cat-row:last-child{margin-bottom:0}
+.wtk-card .icon{width:22px;height:22px;border-radius:6px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.wtk-card .lbl{font-size:9.5px;color:#6b7280;flex:1}
+.wtk-card .bwrap{width:70px;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden}
+.wtk-card .bfill{height:100%;border-radius:2px}
+.wtk-card .val{font-size:10px;font-weight:700;color:#111;width:24px;text-align:right;flex-shrink:0}
+.wtk-card .foot{padding:9px 14px;border-top:1px solid #f9f9f9;display:flex;justify-content:space-between;align-items:center}
+.wtk-card .foot a{font-size:8.5px;color:#9ca3af;text-decoration:none}
+.wtk-card .cnt{font-size:8.5px;color:#aaa}
+
+/* ── DARK ── */
+.wtk-dark{width:220px;background:#0f172a;padding:18px 16px;align-items:center;gap:4px;border:none}
+.wtk-dark .top{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.wtk-dark .lm{width:22px;height:22px;border-radius:6px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wtk-dark .lt{font-size:10.5px;font-weight:800;color:#e2e8f0;letter-spacing:.4px}
+.wtk-dark .score{font-size:48px;font-weight:900;color:#fbbf24;line-height:1;letter-spacing:-2px}
+.wtk-dark .sts{color:#fbbf24;font-size:14px;letter-spacing:1px}
+.wtk-dark .cnt{font-size:9px;color:#475569}
+.wtk-dark .sep{width:100%;height:1px;background:#1e293b;margin:8px 0}
+.wtk-dark .cat-dk{display:flex;align-items:center;gap:6px;width:100%;margin-bottom:5px}
+.wtk-dark .cat-dk:last-child{margin-bottom:0}
+.wtk-dark .cl{font-size:9px;color:#64748b;width:50px;flex-shrink:0}
+.wtk-dark .bw{flex:1;height:3px;background:#1e293b;border-radius:2px;overflow:hidden}
+.wtk-dark .bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--brand),#8b5cf6)}
+.wtk-dark .cv{font-size:9px;font-weight:700;color:#cbd5e1;width:22px;text-align:right;flex-shrink:0}
+.wtk-dark .period{margin-top:10px;font-size:8.5px;color:#334155;background:#1e293b;padding:3px 10px;border-radius:8px}
+
+/* ── Score colours ── */
+.hi{color:#10b981}.md{color:#f59e0b}.lo{color:#ef4444}
+.bar-hi{background:#10b981}.bar-md{background:#f59e0b}.bar-lo{background:#ef4444}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function() {
+  var p = new URLSearchParams(location.search);
+  var style    = p.get('style') || 'card';
+  var color    = p.get('color') || '#6366f1';
+  var name     = p.get('name') || '';
+  var score    = parseFloat(p.get('score')) || 0;
+  var reviews  = parseInt(p.get('reviews')) || 0;
+  var period   = p.get('period') || 'all';
+  var lang     = p.get('lang') || 'auto';
+  var cdata    = [];
+  try { cdata = JSON.parse(p.get('cdata') || '[]'); } catch(e){}
+
+  document.documentElement.style.setProperty('--brand', color);
+  document.documentElement.style.setProperty('--brand-dark', darken(color));
+
+  var locale = lang === 'auto' ? navigator.language : lang;
+  var t = i18n(locale);
+
+  var root = document.getElementById('root');
+  root.innerHTML = buildWidget(style, score, reviews, name, period, cdata, t);
+
+  setTimeout(function() {
+    window.parent.postMessage({ type: 'wtk-widget-resize', height: document.body.scrollHeight }, '*');
+  }, 50);
+
+  function buildWidget(style, score, reviews, name, period, cats, t) {
+    var scoreStr = score.toFixed(1);
+    var stars = starsHtml(score);
+    var periodLabel = t.period[period] || period;
+    var reviewLine = reviews > 0 ? t.reviews.replace('{n}', reviews.toLocaleString()) : '';
+
+    if (style === 'compact') {
+      return '<div class="wtk wtk-compact">'
+        + logoRow()
+        + '<div class="score">' + scoreStr + '<span class="denom">/10</span></div>'
+        + '<div class="stars">' + stars + '</div>'
+        + (reviewLine ? '<div class="cnt">' + reviewLine + '</div>' : '')
+        + '<div class="sep"></div>'
+        + '<div class="period-tag">' + periodLabel + '</div>'
+        + '</div>';
+    }
+
+    if (style === 'horizontal') {
+      var catRows = cats.slice(0, 4).map(function(c) {
+        return '<div class="cat-row">'
+          + '<span class="cl">' + escHtml(c.key) + '</span>'
+          + '<div class="cat-bar-wrap"><div class="cat-bar ' + barClass(c.score) + '" style="width:' + (c.score * 10) + '%"></div></div>'
+          + '<span class="cv ' + scoreClass(c.score) + '">' + c.score.toFixed(1) + '</span>'
+          + '</div>';
+      }).join('');
+      return '<div class="wtk wtk-horizontal">'
+        + '<div class="left">'
+        + '<div class="logo-row" style="justify-content:center">' + logoMark() + '</div>'
+        + '<div class="big">' + scoreStr + '</div>'
+        + '<div class="sub">' + t.outOf + '</div>'
+        + '<div class="s">' + stars + '</div>'
+        + '</div>'
+        + '<div class="mid">' + catRows + '</div>'
+        + '<div class="right">'
+        + '<div class="logo-row" style="flex-direction:column;gap:3px;text-align:center">'
+        + '<span class="logo-text">wheretoknow</span>'
+        + '</div>'
+        + '<div class="cnt">' + (reviews > 0 ? reviews.toLocaleString() + '<br>' + t.reviewsShort : '') + '<br><span style="display:inline-block;margin-top:3px;font-size:8px;background:#f0f0ff;color:var(--brand);padding:2px 7px;border-radius:8px;font-weight:700">' + periodLabel + '</span></div>'
+        + '</div>'
+        + '</div>';
+    }
+
+    if (style === 'card') {
+      var catHtml = cats.map(function(c) {
+        return '<div class="cat-row">'
+          + '<div class="icon">' + catIcon(c.key) + '</div>'
+          + '<span class="lbl">' + escHtml(c.key) + '</span>'
+          + '<div class="bwrap"><div class="bfill ' + barClass(c.score) + '" style="width:' + (c.score*10) + '%"></div></div>'
+          + '<span class="val ' + scoreClass(c.score) + '">' + c.score.toFixed(1) + '</span>'
+          + '</div>';
+      }).join('');
+      return '<div class="wtk wtk-card">'
+        + '<div class="head">'
+        + '<div>' + logoRow('#fff') + '</div>'
+        + '<div class="score-block"><div class="big">' + scoreStr + '<span class="denom">/10</span></div><div class="sts">' + stars + '</div></div>'
+        + '</div>'
+        + '<div class="body">' + catHtml + '</div>'
+        + '<div class="foot"><span class="cnt">' + reviewLine + ' · ' + periodLabel + '</span><a href="https://www.wheretoknow.com" target="_blank" rel="noopener">wheretoknow.com →</a></div>'
+        + '</div>';
+    }
+
+    if (style === 'dark') {
+      var dCats = cats.slice(0,4).map(function(c){
+        return '<div class="cat-dk">'
+          + '<span class="cl">' + escHtml(c.key) + '</span>'
+          + '<div class="bw"><div class="bf" style="width:' + (c.score*10) + '%"></div></div>'
+          + '<span class="cv">' + c.score.toFixed(1) + '</span>'
+          + '</div>';
+      }).join('');
+      return '<div class="wtk wtk-dark">'
+        + '<div class="top"><div class="lm">' + logoSvg() + '</div><span class="lt">wheretoknow</span></div>'
+        + '<div class="score">' + scoreStr + '</div>'
+        + '<div class="sts">' + stars + '</div>'
+        + (reviewLine ? '<div class="cnt">' + reviewLine + '</div>' : '')
+        + (dCats ? '<div class="sep"></div>' + dCats : '')
+        + '<div class="period">' + periodLabel + '</div>'
+        + '</div>';
+    }
+
+    return '';
+  }
+
+  function logoRow(textColor) {
+    return '<div class="logo-row">' + logoMark() + '<span class="logo-text" style="color:' + (textColor||'var(--brand)') + '">wheretoknow</span></div>';
+  }
+  function logoMark() {
+    return '<div class="logo-mark">' + logoSvg() + '</div>';
+  }
+  function logoSvg() {
+    return '<svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 3l2.5 6L6 5.5 7.5 9 10 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function starsHtml(score) {
+    var full = Math.floor(score / 2), half = (score / 2 - full) >= 0.5 ? 1 : 0, empty = 5 - full - half;
+    return '★'.repeat(full) + (half ? '★' : '') + '☆'.repeat(empty);
+  }
+
+  function scoreClass(s) { return s >= 9 ? 'hi' : s >= 7 ? 'md' : 'lo'; }
+  function barClass(s)   { return s >= 9 ? 'bar-hi' : s >= 7 ? 'bar-md' : 'bar-lo'; }
+
+  function catIcon(key) {
+    var icons = { Cleanliness:'🧹', Service:'🤝', Location:'📍', Comfort:'🛏', Facilities:'🏊', Staff:'👥', Value:'💰' };
+    var k = Object.keys(icons).find(function(k){ return key.toLowerCase().indexOf(k.toLowerCase()) >= 0; });
+    return k ? icons[k] : '⭐';
+  }
+
+  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function darken(hex) {
+    var n = parseInt(hex.replace('#',''), 16);
+    var r = Math.max(0, (n>>16) - 20), g = Math.max(0, ((n>>8)&0xff) - 20), b = Math.max(0, (n&0xff) - 20);
+    return '#' + [r,g,b].map(function(c){return c.toString(16).padStart(2,'0')}).join('');
+  }
+
+  function i18n(locale) {
+    var zh = locale && (locale.startsWith('zh') || locale.startsWith('ZH'));
+    var de = locale && locale.startsWith('de');
+    if (zh) return { outOf:'/10 分', reviews:'基于 {n} 条评价', reviewsShort:'条评价', period:{all:'全部时间',year:'过去 12 个月',quarter:'过去 3 个月'} };
+    if (de) return { outOf:'/ 10 Punkte', reviews:'Basiert auf {n} Bewertungen', reviewsShort:'Bewertungen', period:{all:'Gesamtzeitraum',year:'Letzte 12 Monate',quarter:'Letzte 3 Monate'} };
+    return { outOf:'/ 10', reviews:'Based on {n} reviews', reviewsShort:'reviews', period:{all:'All time',year:'Past 12 months',quarter:'Past 3 months'} };
+  }
+})();
+</script>
+</body>
+</html>
