@@ -1,4 +1,4 @@
-const esbuild = require('esbuild');
+import * as esbuild from 'esbuild';
 const watch = process.argv.includes('--watch');
 
 const ctx = await esbuild.context({
