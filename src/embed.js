@@ -26,6 +26,7 @@
   var period     = script.getAttribute('data-period')     || 'all';
   var color      = script.getAttribute('data-color')      || '#6366f1';
   var categories = script.getAttribute('data-categories') || '';
+  var otaSources = script.getAttribute('data-ota-sources') || '';
   var lang       = script.getAttribute('data-lang')       || 'auto';
 
   if (!token) {
@@ -48,7 +49,7 @@
       return res.json();
     })
     .then(function (data) {
-      renderIframe(container, data, { style: style, period: period, color: color, categories: categories, lang: lang });
+      renderIframe(container, data, { style: style, period: period, color: color, categories: categories, otaSources: otaSources, lang: lang });
     })
     .catch(function (err) {
       console.error('[WTK Widget]', err);
@@ -68,6 +69,9 @@
     if (opts.categories) params.set('cats', opts.categories);
     if (data.categories && data.categories.length) {
       params.set('cdata', JSON.stringify(data.categories));
+    }
+    if (data.otaScores && data.otaScores.length) {
+      params.set('odata', JSON.stringify(data.otaScores));
     }
 
     var iframe = document.createElement('iframe');

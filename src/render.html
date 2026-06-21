@@ -22,6 +22,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .cat-bar-wrap{flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden}
 .cat-bar{height:100%;border-radius:2px}
 
+/* ── OTA section (shared across styles) ── */
+.ota-section{border-top:1px solid #f3f4f6;padding:8px 14px 10px}
+.ota-title{font-size:7.5px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.ota-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.ota-row:last-child{margin-bottom:0}
+.ota-name{font-size:9px;color:#6b7280;flex:1}
+.ota-val{font-size:10px;font-weight:700}
+.ota-cnt{font-size:8px;color:#aaa}
+/* horizontal inline OTA badges */
+.ota-badges{display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-top:1px solid #f3f4f6}
+.ota-badge{display:flex;align-items:center;gap:3px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;padding:3px 7px}
+.ota-badge-name{font-size:8px;color:#6b7280}
+.ota-badge-val{font-size:9px;font-weight:700}
+/* dark OTA */
+.ota-dark{width:100%;margin-top:2px}
+.ota-dark-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.ota-dark-row:last-child{margin-bottom:0}
+.ota-dark-name{font-size:8.5px;color:#475569;flex:1}
+.ota-dark-val{font-size:9.5px;font-weight:700;color:#94a3b8}
+
 /* ── COMPACT ── */
 .wtk-compact{width:200px;background:#fff;border:1px solid #e8e8e8;padding:16px 14px 13px;align-items:center;text-align:center;gap:3px}
 .wtk-compact .score{font-size:46px;font-weight:900;color:#111;line-height:1;letter-spacing:-2px}
@@ -29,6 +49,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .wtk-compact .period-tag{margin-top:8px;font-size:8.5px;background:#f0f0ff;color:var(--brand);padding:3px 9px;border-radius:10px;font-weight:700}
 .wtk-compact .cnt{font-size:9.5px;color:#aaa;margin-top:2px}
 .wtk-compact .sep{width:36px;height:1px;background:#f0f0f0;margin:7px auto}
+.wtk-compact .ota-section{width:100%;padding:6px 0 0;border-top:1px solid #f0f0f0;margin-top:6px}
+.wtk-compact .ota-badges{padding:0;border-top:none;justify-content:center}
 
 /* ── HORIZONTAL ── */
 .wtk-horizontal{width:420px;max-width:100%;background:#fff;border:1px solid #e8e8e8;flex-direction:row}
@@ -97,7 +119,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
   var period   = p.get('period') || 'all';
   var lang     = p.get('lang') || 'auto';
   var cdata    = [];
+  var odata    = [];
   try { cdata = JSON.parse(p.get('cdata') || '[]'); } catch(e){}
+  try { odata = JSON.parse(p.get('odata') || '[]'); } catch(e){}
 
   document.documentElement.style.setProperty('--brand', color);
   document.documentElement.style.setProperty('--brand-dark', darken(color));
@@ -106,13 +130,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
   var t = i18n(locale);
 
   var root = document.getElementById('root');
-  root.innerHTML = buildWidget(style, score, reviews, name, period, cdata, t);
+  root.innerHTML = buildWidget(style, score, reviews, name, period, cdata, odata, t);
 
   setTimeout(function() {
     window.parent.postMessage({ type: 'wtk-widget-resize', height: document.body.scrollHeight }, '*');
   }, 50);
 
-  function buildWidget(style, score, reviews, name, period, cats, t) {
+  function otaBadgesHtml(otas) {
+    if (!otas || !otas.length) return '';
+    return '<div class="ota-badges">'
+      + otas.map(function(o) {
+          return '<div class="ota-badge">'
+            + '<span class="ota-badge-name">' + escHtml(o.label) + '</span>'
+            + '<span class="ota-badge-val ' + scoreClass(o.score) + '">' + o.score.toFixed(1) + '</span>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+
+  function otaRowsHtml(otas) {
+    if (!otas || !otas.length) return '';
+    return '<div class="ota-section">'
+      + '<div class="ota-title">Platform Scores</div>'
+      + otas.map(function(o) {
+          return '<div class="ota-row">'
+            + '<span class="ota-name">' + escHtml(o.label) + '</span>'
+            + '<span class="ota-val ' + scoreClass(o.score) + '">' + o.score.toFixed(1) + '</span>'
+            + (o.reviews > 0 ? '<span class="ota-cnt">(' + o.reviews.toLocaleString() + ')</span>' : '')
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+
+  function buildWidget(style, score, reviews, name, period, cats, otas, t) {
     var scoreStr = score.toFixed(1);
     var stars = starsHtml(score);
     var periodLabel = t.period[period] || period;
@@ -126,6 +176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
         + (reviewLine ? '<div class="cnt">' + reviewLine + '</div>' : '')
         + '<div class="sep"></div>'
         + '<div class="period-tag">' + periodLabel + '</div>'
+        + (otas.length ? '<div class="ota-section">' + otaBadgesHtml(otas) + '</div>' : '')
         + '</div>';
     }
 
@@ -137,7 +188,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
           + '<span class="cv ' + scoreClass(c.score) + '">' + c.score.toFixed(1) + '</span>'
           + '</div>';
       }).join('');
-      return '<div class="wtk wtk-horizontal">'
+      return '<div class="wtk wtk-horizontal" style="flex-direction:column">'
+        + '<div style="display:flex;flex-direction:row;flex:1">'
         + '<div class="left">'
         + '<div class="logo-row" style="justify-content:center">' + logoMark() + '</div>'
         + '<div class="big">' + scoreStr + '</div>'
@@ -151,6 +203,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
         + '</div>'
         + '<div class="cnt">' + (reviews > 0 ? reviews.toLocaleString() + '<br>' + t.reviewsShort : '') + '<br><span style="display:inline-block;margin-top:3px;font-size:8px;background:#f0f0ff;color:var(--brand);padding:2px 7px;border-radius:8px;font-weight:700">' + periodLabel + '</span></div>'
         + '</div>'
+        + '</div>'
+        + (otas.length ? otaBadgesHtml(otas) : '')
         + '</div>';
     }
 
@@ -168,7 +222,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
         + '<div>' + logoRow('#fff') + '</div>'
         + '<div class="score-block"><div class="big">' + scoreStr + '<span class="denom">/10</span></div><div class="sts">' + stars + '</div></div>'
         + '</div>'
-        + '<div class="body">' + catHtml + '</div>'
+        + (cats.length ? '<div class="body">' + catHtml + '</div>' : '')
+        + otaRowsHtml(otas)
         + '<div class="foot"><span class="cnt">' + reviewLine + ' · ' + periodLabel + '</span><a href="https://www.wheretoknow.com" target="_blank" rel="noopener">wheretoknow.com →</a></div>'
         + '</div>';
     }
@@ -181,12 +236,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
           + '<span class="cv">' + c.score.toFixed(1) + '</span>'
           + '</div>';
       }).join('');
+      var darkOta = otas.length ? '<div class="sep"></div><div class="ota-dark">'
+        + otas.map(function(o){
+            return '<div class="ota-dark-row">'
+              + '<span class="ota-dark-name">' + escHtml(o.label) + '</span>'
+              + '<span class="ota-dark-val ' + scoreClass(o.score) + '">' + o.score.toFixed(1) + '</span>'
+              + '</div>';
+          }).join('')
+        + '</div>' : '';
       return '<div class="wtk wtk-dark">'
         + '<div class="top"><div class="lm">' + logoSvg() + '</div><span class="lt">wheretoknow</span></div>'
         + '<div class="score">' + scoreStr + '</div>'
         + '<div class="sts">' + stars + '</div>'
         + (reviewLine ? '<div class="cnt">' + reviewLine + '</div>' : '')
         + (dCats ? '<div class="sep"></div>' + dCats : '')
+        + darkOta
         + '<div class="period">' + periodLabel + '</div>'
         + '</div>';
     }
